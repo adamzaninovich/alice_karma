@@ -13,7 +13,7 @@ installed as:
     defp deps do
       [
         {:websocket_client, github: "jeremyong/websocket_client"},
-        {:alice, "~> 0.1.0"},
+        {:alice, "~> 0.1.1"},
         {:alice_karma, "~> 0.0.1"}
       ]
     end
