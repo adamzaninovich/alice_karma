@@ -7,6 +7,8 @@ defmodule AliceKarma.Mixfile do
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: "A handler for the Alice Slack bot. Allows Alice to keep track of karma points for arbitrary terms.",
+     package: package,
      deps: deps]
   end
 
@@ -19,5 +21,13 @@ defmodule AliceKarma.Mixfile do
       {:websocket_client, github: "jeremyong/websocket_client"},
       {:alice, "~> 0.1.0"}
     ]
+  end
+
+  defp package do
+    [files: ["lib", "config", "mix.exs", "README*"],
+     maintainers: ["Adam Zaninovich"],
+     licenses: ["MIT"],
+     links: %{"GitHub" => "https://github.com/adamzaninovich/alice_karma",
+              "Docs"   => "https://github.com/adamzaninovich/alice_karma"}]
   end
 end
