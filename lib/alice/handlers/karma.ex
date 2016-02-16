@@ -5,52 +5,53 @@ defmodule Alice.Handlers.Karma do
   route ~r/\A([^\s]+)--(?:(?=\s)|$)/i,   :decrement
   route ~r/\A([^\s]+)~~(?:(?=\s)|$)/i,   :check
 
-  command ~r/\bkarma best\z/i,           :best
-  command ~r/\bkarma worst ?(?<amount>\d+)?\z/i, :worst
-  command ~r/\bkarma clear ([^\s]+)\z/i, :clear
+  command ~r/\bkarma\z/i,                :best
+  command ~r/\bkarma best( \d+)?\z/i,    :best
+  command ~r/\bkarma worst( \d+)?\z/i,   :worst
+  command ~r/\bkarma empty\z/i,          :empty_all
+  command ~r/\bkarma empty ([^\s]+)\z/i, :empty
 
-  def handle(conn, :increment) do
+  def handle(conn, :increment), do: respond_with_change(conn, 1)
+  def handle(conn, :decrement), do: respond_with_change(conn, -1)
+  def handle(conn, :check),     do: respond_with_change(conn, 0)
+  def handle(conn, :best),      do: respond_with_sorted_terms(conn, &>=/2)
+  def handle(conn, :worst),     do: respond_with_sorted_terms(conn, &</2)
+  def handle(conn, :empty_all) do
+    "All karma has been scattered to the winds."
+    |> reply(delete_state(conn, :karma_counts))
+  end
+  def handle(conn, :empty) do
     term = term(conn)
-    count = get_count(conn, term) + 1
+
+    "#{term} has had its karma scattered to the winds."
+    |> reply(delete_count(conn, term))
+  end
+
+  defp respond_with_change(conn, delta) do
+    term = term(conn)
+    count = get_count(conn, term) + delta
 
     "#{term}: #{count}"
     |> reply(put_count(conn, term, count))
   end
 
-  def handle(conn, :decrement) do
-    term = term(conn)
-    count = get_count(conn, term) - 1
-
-    "#{term}: #{count}"
-    |> reply(put_count(conn, term, count))
-  end
-
-  def handle(conn, :check) do
-    term = term(conn)
-    count = get_count(conn, term)
-
-    "#{term}: #{count}" |> reply(conn)
-  end
-
-  def handle(conn, :best) do
-    conn
-    |> sorted_terms(&>=/2)
-    |> reply(conn)
-  end
-
-  def handle(conn, :worst) do
-    conn
-    |> sorted_terms(&</2)
-    |> reply(conn)
-  end
-
-  defp sorted_terms(conn, sort_fun) do
+  defp respond_with_sorted_terms(conn, sort_fun) do
     get_counts(conn)
-    |> Enum.sort_by(fn({_,val}) -> val end, sort_fun)
-    |> Enum.take(5)
+    |> Enum.sort_by(fn({_,count}) -> count end, sort_fun)
+    |> Enum.take(get_amount(conn))
     |> Enum.with_index(1)
-    |> Enum.map(fn({{term, val}, n}) -> "#{n}. #{term}: #{val}" end)
+    |> Enum.map(fn({{term,count},n}) -> "#{n}. #{term}: #{count}" end)
     |> Enum.join("\n")
+    |> reply(conn)
+  end
+
+  defp get_amount(conn) do
+    case conn.message.captures do
+      [_,amount|_] -> amount
+                      |> String.strip
+                      |> String.to_integer
+      _default     -> 5
+    end
   end
 
   defp get_count(conn, term, default \\ 0) do
@@ -67,6 +68,13 @@ defmodule Alice.Handlers.Karma do
     counts = conn
              |> get_counts
              |> Map.put(term, count)
+    put_state(conn, :karma_counts, counts)
+  end
+
+  defp delete_count(conn, term) do
+    counts = conn
+             |> get_counts
+             |> Map.delete(term)
     put_state(conn, :karma_counts, counts)
   end
 
