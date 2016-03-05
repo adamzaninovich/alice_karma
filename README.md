@@ -13,8 +13,8 @@ installed as:
     defp deps do
       [
         {:websocket_client, github: "jeremyong/websocket_client"},
-        {:alice, "~> 0.1.0"},
-        {:alice_karma, "~> 0.0.1"}
+        {:alice, "~> 0.2.0"},
+        {:alice_karma, "~> 0.1.0"}
       ]
     end
     ```
@@ -30,6 +30,5 @@ installed as:
     ```
 
 ## Usage
-
 
 Use `@alice help` for more information.

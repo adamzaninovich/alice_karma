@@ -1,43 +1,59 @@
 defmodule Alice.Handlers.Karma do
   use Alice.Router
 
-  route ~r/\A([^\s]+)\+\+(?:(?=\s)|$)/i, :increment
-  route ~r/\A([^\s]+)--(?:(?=\s)|$)/i,   :decrement
-  route ~r/\A([^\s]+)~~(?:(?=\s)|$)/i,   :check
+  route   ~r/\A([^\s]+)\+\+(?:(?=\s)|$)/i, :increment
+  route   ~r/\A([^\s]+)--(?:(?=\s)|$)/i,   :decrement
+  route   ~r/\A([^\s]+)~~(?:(?=\s)|$)/i,   :check
+  command ~r/\bkarma\z/i,                  :best
+  command ~r/\bkarma best( \d+)?\z/i,      :best
+  command ~r/\bkarma worst( \d+)?\z/i,     :worst
+  command ~r/\bkarma empty\z/i,            :empty_all
+  command ~r/\bkarma empty ([^\s]+)\z/i,   :empty
 
-  command ~r/\bkarma\z/i,                :best
-  command ~r/\bkarma best( \d+)?\z/i,    :best
-  command ~r/\bkarma worst( \d+)?\z/i,   :worst
-  command ~r/\bkarma empty\z/i,          :empty_all
-  command ~r/\bkarma empty ([^\s]+)\z/i, :empty
+  @doc "`term++` - increase the karma for a term"
+  def increment(conn), do: respond_with_change(conn, 1)
 
-  def handle(conn, :increment), do: respond_with_change(conn, 1)
-  def handle(conn, :decrement), do: respond_with_change(conn, -1)
-  def handle(conn, :check),     do: respond_with_change(conn, 0)
-  def handle(conn, :best),      do: respond_with_sorted_terms(conn, &>=/2)
-  def handle(conn, :worst),     do: respond_with_sorted_terms(conn, &</2)
-  def handle(conn, :empty_all) do
-    "All karma has been scattered to the winds."
-    |> reply(delete_state(conn, :karma_counts))
+  @doc "`term--` - decrease the karma for a term"
+  def decrement(conn), do: respond_with_change(conn, -1)
+
+  @doc "`term~~` - check the karma for a term"
+  def check(conn),     do: respond_with_change(conn, 0)
+
+  @doc "`karma best 10` - get the top terms (amount is optional)"
+  def best(conn),      do: respond_with_sorted_terms(conn, &>=/2)
+
+  @doc "`karma worst 10` - get the lowest terms (amount is optional)"
+  def worst(conn),     do: respond_with_sorted_terms(conn, &</2)
+
+  @doc "`karma empty` - clear the karma for all terms"
+  def empty_all(conn) do
+    conn
+    |> delete_state(:karma_counts)
+    |> reply("All karma has been scattered to the winds.")
   end
-  def handle(conn, :empty) do
+
+  @doc "`karma empty term` - clear the karma for a single term"
+  def empty(conn) do
     term = term(conn)
 
-    "#{term} has had its karma scattered to the winds."
-    |> reply(delete_count(conn, term))
+    conn
+    |> delete_count(term)
+    |> reply("#{term} has had its karma scattered to the winds.")
   end
 
   defp respond_with_change(conn, delta) do
     term = term(conn)
     count = get_count(conn, term) + delta
 
-    "#{term}: #{count}"
-    |> reply(put_count(conn, term, count))
+    conn
+    |> put_count(term, count)
+    |> reply("#{term}: #{count}")
   end
 
-  defp respond_with_sorted_terms(conn, sort_fun) do
-    get_counts(conn)
-    |> Enum.sort_by(fn({_,count}) -> count end, sort_fun)
+  defp respond_with_sorted_terms(conn, sort_func) do
+    conn
+    |> get_counts
+    |> Enum.sort_by(fn({_,count}) -> count end, sort_func)
     |> Enum.take(get_amount(conn))
     |> Enum.with_index(1)
     |> Enum.map(fn({{term,count},n}) -> "#{n}. #{term}: #{count}" end)
