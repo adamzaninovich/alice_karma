@@ -1,4 +1,8 @@
 defmodule Alice.Handlers.Karma do
+  @moduledoc """
+  Allows Alice to keep track of karma points for arbitrary terms
+  """
+
   use Alice.Router
 
   route   ~r/\A([^\s]+)\+\+(?:(?=\s)|$)/i, :increment
@@ -17,13 +21,13 @@ defmodule Alice.Handlers.Karma do
   def decrement(conn), do: respond_with_change(conn, -1)
 
   @doc "`term~~` - check the karma for a term"
-  def check(conn),     do: respond_with_change(conn, 0)
+  def check(conn), do: respond_with_change(conn, 0)
 
   @doc "`karma best 10` - get the top terms (amount is optional)"
-  def best(conn),      do: respond_with_sorted_terms(conn, &>=/2)
+  def best(conn), do: respond_with_sorted_terms(conn, &>=/2)
 
   @doc "`karma worst 10` - get the lowest terms (amount is optional)"
-  def worst(conn),     do: respond_with_sorted_terms(conn, &</2)
+  def worst(conn), do: respond_with_sorted_terms(conn, &</2)
 
   @doc "`karma empty` - clear the karma for all terms"
   def empty_all(conn) do
@@ -34,7 +38,7 @@ defmodule Alice.Handlers.Karma do
 
   @doc "`karma empty term` - clear the karma for a single term"
   def empty(conn) do
-    term = term(conn)
+    term = get_term(conn)
 
     conn
     |> delete_count(term)
@@ -42,7 +46,7 @@ defmodule Alice.Handlers.Karma do
   end
 
   defp respond_with_change(conn, delta) do
-    term = term(conn)
+    term = get_term(conn)
     count = get_count(conn, term) + delta
 
     conn
@@ -94,7 +98,7 @@ defmodule Alice.Handlers.Karma do
     put_state(conn, :karma_counts, counts)
   end
 
-  defp term(conn) do
+  defp get_term(conn) do
     [_full, term | _rest] = conn.message.captures
     String.downcase(term)
   end
