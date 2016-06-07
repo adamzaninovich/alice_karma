@@ -11,7 +11,7 @@ defmodule Alice.Handlers.Karma do
   command ~r/\bkarma\z/i,                  :best
   command ~r/\bkarma best( \d+)?\z/i,      :best
   command ~r/\bkarma worst( \d+)?\z/i,     :worst
-  command ~r/\bkarma empty\z/i,            :empty_all
+  command ~r/\bkarma empty all the karma, and yes I actually really mean to do this!\z/i, :empty_all
   command ~r/\bkarma empty ([^\s]+)\z/i,   :empty
 
   @doc "`term++` - increase the karma for a term"
@@ -29,7 +29,7 @@ defmodule Alice.Handlers.Karma do
   @doc "`karma worst 10` - get the lowest terms (amount is optional)"
   def worst(conn), do: respond_with_sorted_terms(conn, &</2)
 
-  @doc "`karma empty` - clear the karma for all terms"
+  @doc "`karma empty all the karma and yes I actually really mean to do this` - clear the karma for all terms"
   def empty_all(conn) do
     conn
     |> delete_state(:karma_counts)
