@@ -8,11 +8,11 @@ defmodule Alice.Handlers.Karma do
   route   ~r/\b([^\s]+)\+\+(?:(?=\s)|$)/i, :increment
   route   ~r/\b([^\s]+)--(?:(?=\s)|$)/i,   :decrement
   route   ~r/\b([^\s]+)~~(?:(?=\s)|$)/i,   :check
-  command ~r/\bkarma\z/i,                  :best
-  command ~r/\bkarma best( \d+)?\z/i,      :best
-  command ~r/\bkarma worst( \d+)?\z/i,     :worst
-  command ~r/\bkarma empty all the karma, and yes I actually really mean to do this!\z/i, :empty_all
-  command ~r/\bkarma empty ([^\s]+)\z/i,   :empty
+  command ~r/>:? karma\z/i,                :best
+  command ~r/>:? karma best( \d+)?\z/i,    :best
+  command ~r/>:? karma worst( \d+)?\z/i,   :worst
+  command ~r/>:? karma empty ([^\s]+)\z/i, :empty
+  command ~r/>:? karma empty all the karma, and yes I actually really mean to do this!\z/i, :empty_all
 
   @doc "`term++` - increase the karma for a term"
   def increment(conn), do: respond_with_change(conn, 1)

@@ -3,7 +3,7 @@ defmodule AliceKarma.Mixfile do
 
   def project do
     [app: :alice_karma,
-     version: "0.2.1",
+     version: "0.3.0",
      elixir: "~> 1.2",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -19,7 +19,6 @@ defmodule AliceKarma.Mixfile do
   defp deps do
     [
       {:credo, ">= 0.0.0", only: :dev},
-      {:websocket_client, github: "jeremyong/websocket_client"},
       {:alice, "~> 0.3"}
     ]
   end
