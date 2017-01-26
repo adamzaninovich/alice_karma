@@ -39,10 +39,11 @@ defmodule Alice.Handlers.Karma do
   @doc "`karma empty term` - clear the karma for a single term"
   def empty(conn) do
     term = get_term(conn)
+    count = get_count(conn, term)
 
     conn
     |> delete_count(term)
-    |> reply("#{term} has had its karma scattered to the winds.")
+    |> reply("#{term} has had its karma scattered to the winds. (#{count})")
   end
 
   defp respond_with_change(conn, delta) do
