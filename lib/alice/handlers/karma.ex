@@ -5,9 +5,9 @@ defmodule Alice.Handlers.Karma do
 
   use Alice.Router
 
-  route   ~r/\b([^\s]+)\+\+(?:(?=\s)|$)/i, :increment
-  route   ~r/\b([^\s]+)--(?:(?=\s)|$)/i,   :decrement
-  route   ~r/\b([^\s]+)~~(?:(?=\s)|$)/i,   :check
+  route   ~r/\b([^\s;]+)\+\+(?:(?=\s)|$)/i, :increment
+  route   ~r/\b([^\s;]+)--(?:(?=\s)|$)/i,   :decrement
+  route   ~r/\b([^\s;]+)~~(?:(?=\s)|$)/i,   :check
   command ~r/>:? karma\z/i,                :best
   command ~r/>:? karma best( \d+)?\z/i,    :best
   command ~r/>:? karma worst( \d+)?\z/i,   :worst
