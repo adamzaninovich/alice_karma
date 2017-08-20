@@ -4,7 +4,7 @@ defmodule AliceKarma.Mixfile do
   def project do
     [app: :alice_karma,
      version: "0.3.3",
-     elixir: "~> 1.2",
+     elixir: "~> 1.5",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      description: "A handler for the Alice Slack bot. Allows Alice to keep track of karma points for arbitrary terms.",
