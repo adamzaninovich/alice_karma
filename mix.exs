@@ -8,8 +8,8 @@ defmodule AliceKarma.Mixfile do
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      description: "A handler for the Alice Slack bot. Allows Alice to keep track of karma points for arbitrary terms.",
-     package: package,
-     deps: deps]
+     package: package(),
+     deps: deps()]
   end
 
   def application do
@@ -19,7 +19,6 @@ defmodule AliceKarma.Mixfile do
   defp deps do
     [
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:credo, ">= 0.0.0", only: :dev},
       {:alice, "~> 0.3"}
     ]
   end
@@ -28,7 +27,6 @@ defmodule AliceKarma.Mixfile do
     [files: ["lib", "config", "mix.exs", "README*"],
      maintainers: ["Adam Zaninovich"],
      licenses: ["MIT"],
-     links: %{"GitHub" => "https://github.com/adamzaninovich/alice_karma",
-              "Docs"   => "https://github.com/adamzaninovich/alice_karma"}]
+     links: %{"GitHub" => "https://github.com/adamzaninovich/alice_karma"}]
   end
 end

@@ -57,7 +57,7 @@ defmodule Alice.Handlers.Karma do
 
   defp respond_with_sorted_terms(conn, sort_func) do
     conn
-    |> get_counts
+    |> get_counts()
     |> Enum.sort_by(fn({_,count}) -> count end, sort_func)
     |> Enum.take(get_amount(conn))
     |> Enum.with_index(1)
@@ -69,15 +69,15 @@ defmodule Alice.Handlers.Karma do
   defp get_amount(conn) do
     case conn.message.captures do
       [_,amount|_] -> amount
-                      |> String.strip
-                      |> String.to_integer
+                      |> String.trim()
+                      |> String.to_integer()
       _default     -> 5
     end
   end
 
   defp get_count(conn, term, default \\ 0) do
     conn
-    |> get_counts
+    |> get_counts()
     |> Map.get(term, default)
   end
 
@@ -87,14 +87,14 @@ defmodule Alice.Handlers.Karma do
 
   defp put_count(conn, term, count) do
     counts = conn
-             |> get_counts
+             |> get_counts()
              |> Map.put(term, count)
     put_state(conn, :karma_counts, counts)
   end
 
   defp delete_count(conn, term) do
     counts = conn
-             |> get_counts
+             |> get_counts()
              |> Map.delete(term)
     put_state(conn, :karma_counts, counts)
   end
