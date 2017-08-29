@@ -47,13 +47,18 @@ defmodule Alice.Handlers.Karma do
   end
 
   defp respond_with_change(conn, delta) do
-    term = get_term(conn)
+    conn
+    |> get_term()
+    |> respond_with_change(conn, delta)
+  end
+  defp respond_with_change(term, conn, delta) when byte_size(term) > 1 do
     count = get_count(conn, term) + delta
 
     conn
     |> put_count(term, count)
     |> reply("#{term}: #{count}")
   end
+  defp respond_with_change(_term, conn, _delta), do: conn
 
   defp respond_with_sorted_terms(conn, sort_func) do
     conn
