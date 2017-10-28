@@ -3,7 +3,7 @@ defmodule AliceKarma.Mixfile do
 
   def project do
     [app: :alice_karma,
-     version: "0.3.4",
+     version: "0.3.5",
      elixir: "~> 1.5",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
