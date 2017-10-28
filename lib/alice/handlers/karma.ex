@@ -1,9 +1,11 @@
 defmodule Alice.Handlers.Karma do
+  use Alice.Router
+  alias Alice.Conn
+
+  @karma_denial_message Application.get_env(:alice_karma, :karma_denial_message)
   @moduledoc """
   Allows Alice to keep track of karma points for arbitrary terms
   """
-
-  use Alice.Router
 
   route   ~r/\b([^\s;]+)\+\+(?:(?=\s)|$)/i, :increment
   route   ~r/\b([^\s;]+)--(?:(?=\s)|$)/i,   :decrement
@@ -14,8 +16,13 @@ defmodule Alice.Handlers.Karma do
   command ~r/>:? karma empty ([^\s]+)\z/i, :empty
   command ~r/>:? karma empty all the karma, and yes I actually really mean to do this!\z/i, :empty_all
 
-  @doc "`term++` - increase the karma for a term"
-  def increment(conn), do: respond_with_change(conn, 1)
+  @doc "`term++` - increase the karma for a term but only if term does not equal incrementer's name"
+  def increment(conn) do
+    conn
+    |> get_term
+    |> increment(Conn.user(conn), conn)
+  end
+
 
   @doc "`term--` - decrease the karma for a term"
   def decrement(conn), do: respond_with_change(conn, -1)
@@ -46,11 +53,15 @@ defmodule Alice.Handlers.Karma do
     |> reply("#{term} has had its karma scattered to the winds. (#{count})")
   end
 
+  defp increment(term, term, conn), do: reply(conn, ~s(#{@karma_denial_message}))
+  defp increment(term, _user, conn), do: respond_with_change(term, conn, 1)
+
   defp respond_with_change(conn, delta) do
     conn
     |> get_term()
     |> respond_with_change(conn, delta)
   end
+
   defp respond_with_change(term, conn, delta) when byte_size(term) > 1 do
     count = get_count(conn, term) + delta
 
