@@ -3,8 +3,6 @@
 use Mix.Config
 
 config :alice, handlers: [Alice.Handlers.Karma]
-config :alice_karma,
-  karma_denial_message: "People who don't think shouldn't talk."
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

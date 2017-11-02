@@ -1,28 +1,34 @@
 defmodule Alice.Handlers.Karma do
-  use Alice.Router
-  alias Alice.Conn
-
-  @karma_denial_message Application.get_env(:alice_karma, :karma_denial_message)
   @moduledoc """
   Allows Alice to keep track of karma points for arbitrary terms
   """
 
+  use Alice.Router
+
+  @default_denial_messages ["https://i.imgur.com/MWG4lMY.jpg",
+                            "https://i.imgur.com/DGj9WX2.gif",
+                            "https://i.imgur.com/J6j4QdA.gif",
+                            "https://i.imgur.com/2yxg2lB.gif",
+                            "https://i.imgur.com/A5iY5B9.gif",
+                            "People who don't think shouldn't talk.",
+                            "Yeah, nope."]
+  @karma_denial_messages Application.get_env(:alice_karma, :karma_denial_messages, @default_denial_messages)
+
   route   ~r/\b([^\s;]+)\+\+(?:(?=\s)|$)/i, :increment
   route   ~r/\b([^\s;]+)--(?:(?=\s)|$)/i,   :decrement
   route   ~r/\b([^\s;]+)~~(?:(?=\s)|$)/i,   :check
-  command ~r/>:? karma\z/i,                :best
-  command ~r/>:? karma best( \d+)?\z/i,    :best
-  command ~r/>:? karma worst( \d+)?\z/i,   :worst
-  command ~r/>:? karma empty ([^\s]+)\z/i, :empty
+  command ~r/>:? karma\z/i,                 :best
+  command ~r/>:? karma best( \d+)?\z/i,     :best
+  command ~r/>:? karma worst( \d+)?\z/i,    :worst
+  command ~r/>:? karma empty ([^\s]+)\z/i,  :empty
   command ~r/>:? karma empty all the karma, and yes I actually really mean to do this!\z/i, :empty_all
 
   @doc "`term++` - increase the karma for a term but only if term does not equal incrementer's name"
   def increment(conn) do
     conn
     |> get_term
-    |> increment(Conn.user(conn), conn)
+    |> increment(Alice.Conn.user(conn), conn)
   end
-
 
   @doc "`term--` - decrease the karma for a term"
   def decrement(conn), do: respond_with_change(conn, -1)
@@ -44,17 +50,21 @@ defmodule Alice.Handlers.Karma do
   end
 
   @doc "`karma empty term` - clear the karma for a single term"
-  def empty(conn) do
-    term = get_term(conn)
+  def empty(conn), do: empty(conn, get_term(conn), Alice.Conn.user(conn))
+
+  defp empty(conn, user, user), do: deny_karma(conn)
+  defp empty(conn, term, _user) do
     count = get_count(conn, term)
 
     conn
     |> delete_count(term)
-    |> reply("#{term} has had its karma scattered to the winds. (#{count})")
+    |> reply("#{term}'s karma has been scattered to the winds. (#{count})")
   end
 
-  defp increment(term, term, conn), do: reply(conn, ~s(#{@karma_denial_message}))
+  defp increment(user, user, conn),  do: deny_karma(conn)
   defp increment(term, _user, conn), do: respond_with_change(term, conn, 1)
+
+  defp deny_karma(conn), do: reply(conn, @karma_denial_messages)
 
   defp respond_with_change(conn, delta) do
     conn
